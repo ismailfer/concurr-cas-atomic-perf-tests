@@ -20,8 +20,9 @@ Runs a performance test on concurrency testing various implementations; like:
 ## Test Results
 
 My Test Results (best first):
-- ReentrantLock is the best, then
-- Synchronized, then
 - AtomicInteger
+- ReentrantLock
+- Synchronized
+- AtomicInteger (compareAndSet)
 
 

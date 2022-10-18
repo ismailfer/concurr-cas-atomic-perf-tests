@@ -1,14 +1,17 @@
 package com.ismail.concurr.cas;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Test;
 
 /**
  * Runs a performance test on concurrency testing various implementations
  * 
  * My Test Results (best first):
- * - ReentrantLock is the best, then
- * - Synchronized, then
  * - AtomicInteger
+ * - ReentrantLock 
+ * - Synchronized, then
+ * - AtomicInteger compareAndSwap
  * 
  * @author ismail
  * @since 20221017
@@ -170,7 +173,47 @@ public class PerformanceTest
             nanos = System.nanoTime() - nanos;
 
             System.out.println(
-                    "testCounter3(atomic)        : counter=" + counter.getValue() + ", threads=" + threadCount + ", " + iterations + ", time=" + (nanos / 1000000.0) + " ms, avg=" + (0.1 * nanos / iterations) + " nanos");
+                    "testCounter3(atomic wrap)   : counter=" + counter.getValue() + ", threads=" + threadCount + ", " + iterations + ", time=" + (nanos / 1000000.0) + " ms, avg=" + (0.1 * nanos / iterations) + " nanos");
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    @Test
+    public void testCounter4()
+    {
+        try
+        {
+            final AtomicInteger counter = new AtomicInteger();
+
+            Thread[] tt = new Thread[threadCount];
+            for (int i = 0; i < threadCount; i++)
+            {
+                tt[i] = new Thread()
+                {
+                    public void run()
+                    {
+                        for (int m = 0; m < iterations; m++)
+                            counter.incrementAndGet();
+                    }
+                };
+            }
+
+            long nanos = System.nanoTime();
+
+            for (int i = 0; i < threadCount; i++)
+                tt[i].start();
+
+            for (int i = 0; i < threadCount; i++)
+                tt[i].join();
+
+            nanos = System.nanoTime() - nanos;
+
+            System.out.println(
+                    "testCounter4(atomic)        : counter=" + counter.get() + ", threads=" + threadCount + ", " + iterations + ", time=" + (nanos / 1000000.0) + " ms, avg=" + (0.1 * nanos / iterations) + " nanos");
 
         }
         catch (Exception e)
